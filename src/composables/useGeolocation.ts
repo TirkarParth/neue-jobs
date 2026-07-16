@@ -36,9 +36,9 @@ export function useGeolocation() {
       detectedPlace.value = place
       return place
     } catch (error) {
-      if (error instanceof GeolocationPositionError) {
+      if (isGeolocationError(error)) {
         locationError.value =
-          error.code === error.PERMISSION_DENIED
+          error.code === 1
             ? 'Standortzugriff wurde verweigert. Bitte Ort manuell eingeben.'
             : 'Standort konnte nicht ermittelt werden.'
       } else if (error instanceof Error) {
@@ -59,4 +59,13 @@ export function useGeolocation() {
     coords,
     detectLocation,
   }
+}
+
+function isGeolocationError(error: unknown): error is GeolocationPositionError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    typeof (error as GeolocationPositionError).code === 'number'
+  )
 }

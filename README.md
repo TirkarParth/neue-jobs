@@ -10,7 +10,15 @@ Find jobs near you in Germany. Built with Vue 3 and deployed on Netlify.
 | Jobs in Germany by location? | Yes. Bundesagentur für Arbeit Jobsuche API supports `wo` (place) + `umkreis` (radius in km) and returns distance + coordinates. |
 | Official alternative | [Adzuna](https://developer.adzuna.com/) country code `de` (requires free `app_id` / `app_key`). |
 
-Primary data source for this app: the community-documented [Arbeitsagentur Jobsuche API](https://github.com/bundesAPI/jobsuche-api) (`rest.arbeitsagentur.de`), proxied through Netlify Functions to avoid CORS and keep the client thin.
+Primary data source: the community-documented [Arbeitsagentur Jobsuche API](https://github.com/bundesAPI/jobsuche-api) (`rest.arbeitsagentur.de`), proxied through Netlify Functions (production) and a Vite proxy (local `npm run dev`).
+
+## Features
+
+- Keyword + city / PLZ search across Germany
+- “Mein Standort” via browser geolocation + Nominatim reverse geocoding
+- Radius filter (5–200 km)
+- Filters for Angebotsart and Arbeitszeit
+- German UI optimized for nearby results
 
 ## Stack
 
@@ -20,13 +28,17 @@ Primary data source for this app: the community-documented [Arbeitsagentur Jobsu
 
 ## Local development
 
+Requires Node 20.19+ (Node 22 recommended via `.nvmrc`):
+
 ```bash
-nvm use   # Node 22
+nvm use
 npm install
 npm run dev
 ```
 
-For functions locally, use [Netlify CLI](https://docs.netlify.com/cli/get-started/):
+Open http://localhost:5173
+
+For Netlify Functions locally:
 
 ```bash
 npx netlify dev
@@ -36,9 +48,19 @@ npx netlify dev
 
 1. Push this repo to GitHub
 2. In Netlify: **Add new site → Import from Git**
-3. Build command: `npm run build`
-4. Publish directory: `dist`
-5. (Optional) Node version is set in `netlify.toml`
+3. Build settings are already in `netlify.toml`:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+   - Functions: `netlify/functions`
+4. Deploy — every push to `main` rebuilds the site
+
+## Project layout
+
+```
+src/                 Vue app (views, components, API client)
+netlify/functions/   search-jobs + job-details proxies
+netlify.toml         build + SPA + /api rewrites
+```
 
 ## License
 

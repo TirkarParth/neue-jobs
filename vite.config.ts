@@ -9,32 +9,30 @@ export default defineConfig({
       '/api/search-jobs': {
         target: 'https://rest.arbeitsagentur.de',
         changeOrigin: true,
+        secure: true,
         rewrite: (path) => {
-          const url = new URL(path, 'http://localhost')
-          const params = url.searchParams
-          return `/jobboerse/jobsuche-service/pc/v4/jobs?${params.toString()}`
+          const queryIndex = path.indexOf('?')
+          const query = queryIndex >= 0 ? path.slice(queryIndex) : ''
+          return `/jobboerse/jobsuche-service/pc/v4/jobs${query}`
         },
-        configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq) => {
-            proxyReq.setHeader('X-API-Key', 'jobboerse-jobsuche')
-            proxyReq.setHeader('Accept', 'application/json')
-          })
+        headers: {
+          'X-API-Key': 'jobboerse-jobsuche',
+          Accept: 'application/json',
         },
       },
       '/api/job-details': {
         target: 'https://rest.arbeitsagentur.de',
         changeOrigin: true,
+        secure: true,
         rewrite: (path) => {
           const url = new URL(path, 'http://localhost')
           const refnr = url.searchParams.get('refnr') ?? ''
           const encoded = Buffer.from(refnr, 'utf8').toString('base64')
           return `/jobboerse/jobsuche-service/pc/v4/jobdetails/${encoded}`
         },
-        configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq) => {
-            proxyReq.setHeader('X-API-Key', 'jobboerse-jobsuche')
-            proxyReq.setHeader('Accept', 'application/json')
-          })
+        headers: {
+          'X-API-Key': 'jobboerse-jobsuche',
+          Accept: 'application/json',
         },
       },
     },
