@@ -44,15 +44,19 @@ For Netlify Functions locally:
 npx netlify dev
 ```
 
+## Repository
+
+https://github.com/TirkarParth/neue-jobs
+
 ## Deploy on Netlify
 
-1. Push this repo to GitHub
-2. In Netlify: **Add new site → Import from Git**
+1. Open [Netlify → Add new site → Import an existing project](https://app.netlify.com/start)
+2. Choose GitHub and select `TirkarParth/neue-jobs`
 3. Build settings are already in `netlify.toml`:
    - Build command: `npm run build`
    - Publish directory: `dist`
    - Functions: `netlify/functions`
-4. Deploy — every push to `main` rebuilds the site
+4. Click **Deploy site** — every push to `main` rebuilds automatically
 
 ## Project layout
 
