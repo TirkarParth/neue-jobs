@@ -1,8 +1,6 @@
 import type { JobSearchParams, JobSearchResponse } from '../types/job'
 
 function apiBase(): string {
-  // Netlify Dev and production rewrite /api/* → /.netlify/functions/*
-  // Vite proxy mirrors the same path in local `npm run dev`.
   return '/api'
 }
 
@@ -10,9 +8,12 @@ export async function searchJobs(params: JobSearchParams): Promise<JobSearchResp
   const query = new URLSearchParams()
 
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      query.set(key, String(value))
+    if (value === undefined || value === null || value === '') return
+    if (Array.isArray(value)) {
+      if (value.length > 0) query.set(key, value.join(','))
+      return
     }
+    query.set(key, String(value))
   })
 
   const response = await fetch(`${apiBase()}/search-jobs?${query.toString()}`)
