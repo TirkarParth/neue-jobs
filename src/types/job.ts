@@ -1,35 +1,35 @@
-export interface JobCoordinates {
-  lat: number
-  lon: number
+export type JobSource = 'arbeitsagentur' | 'adzuna' | 'jooble'
+
+export type Arbeitszeit = 'vz' | 'tz' | 'ho' | 'snw' | 'mj'
+
+export interface NormalizedJob {
+  id: string
+  source: JobSource
+  title: string
+  company?: string
+  locationLabel?: string
+  distanceKm?: number
+  url: string
+  publishedAt?: string
+  occupation?: string
+  description?: string
+  salary?: string
 }
 
-export interface JobLocation {
-  plz?: string
-  ort?: string
-  strasse?: string
-  region?: string
-  land?: string
-  koordinaten?: JobCoordinates
-  entfernung?: string
-}
-
-export interface JobOffer {
-  beruf?: string
-  titel: string
-  refnr: string
-  arbeitsort?: JobLocation
-  arbeitgeber?: string
-  aktuelleVeroeffentlichungsdatum?: string
-  eintrittsdatum?: string
-  kundennummerHash?: string
+export interface SourceStatus {
+  id: JobSource
+  label: string
+  status: 'ok' | 'skipped' | 'error'
+  total?: number
+  message?: string
 }
 
 export interface JobSearchResponse {
-  stellenangebote: JobOffer[]
-  maxErgebnisse?: number
-  page?: number
-  size?: number
-  took?: number
+  jobs: NormalizedJob[]
+  total: number
+  page: number
+  size: number
+  sources: SourceStatus[]
 }
 
 export interface JobSearchParams {
@@ -42,9 +42,8 @@ export interface JobSearchParams {
   arbeitszeit?: string
   befristung?: number
   veroeffentlichtseit?: number
+  sources?: JobSource[]
 }
-
-export type Arbeitszeit = 'vz' | 'tz' | 'ho' | 'snw' | 'mj'
 
 export interface SearchFormState {
   was: string
@@ -52,4 +51,11 @@ export interface SearchFormState {
   umkreis: number
   arbeitszeit: '' | Arbeitszeit
   angebotsart: number | ''
+  sources: JobSource[]
 }
+
+export const SOURCE_OPTIONS: { id: JobSource; label: string }[] = [
+  { id: 'arbeitsagentur', label: 'Arbeitsagentur' },
+  { id: 'adzuna', label: 'Adzuna' },
+  { id: 'jooble', label: 'Jooble' },
+]
