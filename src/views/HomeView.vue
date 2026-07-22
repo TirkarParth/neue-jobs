@@ -10,7 +10,7 @@ const searchForm = ref<InstanceType<typeof SearchForm> | null>(null)
 const hasSearched = ref(false)
 
 const { locating, locationError, detectLocation } = useGeolocation()
-const { jobs, total, loading, error, page, search, goToPage } = useJobSearch()
+const { jobs, total, sources, loading, error, page, search, goToPage } = useJobSearch()
 
 async function onSearch(form: SearchFormState) {
   hasSearched.value = true
@@ -21,6 +21,7 @@ async function onSearch(form: SearchFormState) {
     umkreis: form.umkreis,
     page: 1,
     size: 20,
+    sources: form.sources,
   }
 
   if (form.arbeitszeit) params.arbeitszeit = form.arbeitszeit
@@ -41,10 +42,10 @@ async function onLocate() {
   <div class="home">
     <section class="hero">
       <p class="brand">NahJobs</p>
-      <h1>Stellen in deiner Nähe — überall in Deutschland</h1>
+      <h1>Stellen in deiner Nähe — aus mehreren Quellen in Deutschland</h1>
       <p class="lede">
-        Suche nach Beruf und Ort, oder nutze deinen Standort. Ergebnisse kommen aus der
-        Jobsuche der Bundesagentur für Arbeit.
+        Suche nach Beruf und Ort, oder nutze deinen Standort. Ergebnisse kommen von der
+        Arbeitsagentur sowie Adzuna und Jooble (mit API-Keys).
       </p>
 
       <SearchForm
@@ -59,6 +60,7 @@ async function onLocate() {
     <JobList
       :jobs="jobs"
       :total="total"
+      :sources="sources"
       :loading="loading"
       :error="error"
       :page="page"
@@ -93,7 +95,7 @@ async function onLocate() {
 
 h1 {
   margin: 0;
-  max-width: 18ch;
+  max-width: 22ch;
   font-family: var(--font-body);
   font-size: clamp(1.15rem, 2.6vw, 1.45rem);
   font-weight: 600;
@@ -105,7 +107,7 @@ h1 {
 
 .lede {
   margin: 0 0 0.4rem;
-  max-width: 42ch;
+  max-width: 46ch;
   color: var(--muted);
   font-size: 1.02rem;
   line-height: 1.55;
