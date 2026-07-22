@@ -1,10 +1,11 @@
 import { ref } from 'vue'
 import { searchJobs } from '../api/jobs'
-import type { JobOffer, JobSearchParams } from '../types/job'
+import type { JobSearchParams, NormalizedJob, SourceStatus } from '../types/job'
 
 export function useJobSearch() {
-  const jobs = ref<JobOffer[]>([])
+  const jobs = ref<NormalizedJob[]>([])
   const total = ref(0)
+  const sources = ref<SourceStatus[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
   const lastParams = ref<JobSearchParams | null>(null)
@@ -21,11 +22,13 @@ export function useJobSearch() {
         size: 20,
         ...params,
       })
-      jobs.value = data.stellenangebote ?? []
-      total.value = data.maxErgebnisse ?? jobs.value.length
+      jobs.value = data.jobs ?? []
+      total.value = data.total ?? jobs.value.length
+      sources.value = data.sources ?? []
     } catch (err) {
       jobs.value = []
       total.value = 0
+      sources.value = []
       error.value = err instanceof Error ? err.message : 'Unbekannter Fehler'
     } finally {
       loading.value = false
@@ -40,6 +43,7 @@ export function useJobSearch() {
   return {
     jobs,
     total,
+    sources,
     loading,
     error,
     page,

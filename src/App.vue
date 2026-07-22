@@ -19,14 +19,7 @@ import { RouterLink, RouterView } from 'vue-router'
 
     <footer class="footer">
       <p>
-        NahJobs · Stellenangebote Deutschland · Daten:
-        <a
-          href="https://www.arbeitsagentur.de/jobsuche/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Bundesagentur für Arbeit
-        </a>
+        NahJobs · Mehrere Quellen in Deutschland · Arbeitsagentur, Adzuna, Jooble
       </p>
     </footer>
   </div>

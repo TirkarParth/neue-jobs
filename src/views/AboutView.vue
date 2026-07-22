@@ -10,14 +10,16 @@
       Stichwort und Ort — optional mit GPS — und erhältst Angebote im gewählten Umkreis.
     </p>
     <p>
-      Die Daten stammen aus der Jobsuche der Bundesagentur für Arbeit und werden über
-      Netlify Functions geladen. Die App selbst läuft als statische Single-Page-Application
-      auf Netlify.
+      Die Suche aggregiert mehrere Quellen: die Jobsuche der Bundesagentur für Arbeit
+      (immer aktiv), plus Adzuna und Jooble wenn API-Keys gesetzt sind. Antworten werden
+      normalisiert, zusammengeführt und bereinigt — über Netlify Functions in Produktion
+      und einen Vite-Middleware-Proxy lokal.
     </p>
     <ul>
       <li>Vue 3 + TypeScript + Vite</li>
+      <li>Quellen: Arbeitsagentur, Adzuna, Jooble</li>
       <li>Standortsuche mit Browser-Geolocation und OpenStreetMap Nominatim</li>
-      <li>Filter für Angebotsart und Arbeitszeit</li>
+      <li>Filter für Angebotsart und Arbeitszeit (Arbeitsagentur)</li>
       <li>Bereit für Netlify-Deploy mit SPA-Rewrites</li>
     </ul>
     <RouterLink class="back" to="/">← Zurück zur Suche</RouterLink>

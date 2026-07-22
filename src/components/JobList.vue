@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import type { JobOffer } from '../types/job'
+import type { NormalizedJob, SourceStatus } from '../types/job'
 import JobCard from './JobCard.vue'
 
 defineProps<{
-  jobs: JobOffer[]
+  jobs: NormalizedJob[]
   total: number
   loading: boolean
   error: string | null
   page: number
   hasSearched: boolean
+  sources: SourceStatus[]
 }>()
 
 const emit = defineEmits<{
@@ -18,13 +19,19 @@ const emit = defineEmits<{
 function formatCount(n: number) {
   return new Intl.NumberFormat('de-DE').format(n)
 }
+
+function statusLabel(status: SourceStatus['status']) {
+  if (status === 'ok') return 'aktiv'
+  if (status === 'skipped') return 'ohne API-Key'
+  return 'Fehler'
+}
 </script>
 
 <template>
   <section class="results" aria-live="polite">
     <div v-if="loading" class="state state-loading">
       <div class="spinner" aria-hidden="true" />
-      <p>Stellen in deiner Umgebung werden geladen…</p>
+      <p>Stellen aus mehreren Quellen werden geladen…</p>
     </div>
 
     <div v-else-if="error" class="state state-error">
@@ -33,23 +40,45 @@ function formatCount(n: number) {
     </div>
 
     <div v-else-if="!hasSearched" class="state state-idle">
-      <p>Starte mit einem Beruf und einem Ort — oder nutze deinen Standort.</p>
+      <p>Starte mit einem Beruf und einem Ort — Ergebnisse kommen von Arbeitsagentur, Adzuna und Jooble.</p>
     </div>
 
     <div v-else-if="jobs.length === 0" class="state">
-      <p>Keine Stellen gefunden. Probiere einen größeren Umkreis oder andere Stichworte.</p>
+      <p>Keine Stellen gefunden. Probiere einen größeren Umkreis, andere Stichworte oder mehr Quellen.</p>
+      <ul v-if="sources.length" class="source-status">
+        <li v-for="source in sources" :key="source.id">
+          <strong>{{ source.label }}</strong>: {{ statusLabel(source.status) }}
+          <span v-if="source.message"> — {{ source.message }}</span>
+        </li>
+      </ul>
     </div>
 
     <template v-else>
       <header class="results-header">
-        <h2>{{ formatCount(total) }} Stellen gefunden</h2>
-        <p>Seite {{ page }} · sortiert nach Nähe zur Suche</p>
+        <div>
+          <h2>{{ formatCount(total) }} Stellen gefunden</h2>
+          <p>Seite {{ page }} · zusammengeführt &amp; bereinigt</p>
+        </div>
+        <ul class="source-pills" aria-label="Quellenstatus">
+          <li
+            v-for="source in sources"
+            :key="source.id"
+            class="source-pill"
+            :data-status="source.status"
+            :title="source.message || statusLabel(source.status)"
+          >
+            {{ source.label }}
+            <span v-if="source.status === 'ok' && source.total != null">
+              {{ formatCount(source.total) }}
+            </span>
+          </li>
+        </ul>
       </header>
 
       <div class="job-list">
         <JobCard
           v-for="(job, index) in jobs"
-          :key="job.refnr"
+          :key="job.id"
           :job="job"
           :style="{ animationDelay: `${Math.min(index, 10) * 40}ms` }"
         />
@@ -80,14 +109,18 @@ function formatCount(n: number) {
 }
 
 .results-header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-  align-items: baseline;
+  display: grid;
+  gap: 0.85rem;
   margin-bottom: 0.5rem;
   padding-bottom: 0.85rem;
   border-bottom: 1px solid var(--border);
+}
+
+@media (min-width: 760px) {
+  .results-header {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
 }
 
 .results-header h2 {
@@ -98,9 +131,54 @@ function formatCount(n: number) {
 }
 
 .results-header p {
-  margin: 0;
+  margin: 0.25rem 0 0;
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.source-pills,
+.source-status {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.source-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-start;
+}
+
+.source-pill {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.source-pill[data-status='skipped'] {
+  background: #eee9df;
+  color: #6d6558;
+}
+
+.source-pill[data-status='error'] {
+  background: #f6e4e4;
+  color: var(--danger);
+}
+
+.source-status {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.35rem;
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .state {

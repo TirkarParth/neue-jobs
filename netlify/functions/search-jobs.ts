@@ -1,21 +1,6 @@
 import type { Handler, HandlerEvent } from '@netlify/functions'
-
-const BA_BASE =
-  'https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs'
-const API_KEY = 'jobboerse-jobsuche'
-
-const ALLOWED_PARAMS = [
-  'was',
-  'wo',
-  'umkreis',
-  'page',
-  'size',
-  'angebotsart',
-  'arbeitszeit',
-  'befristung',
-  'veroeffentlichtseit',
-  'zeitarbeit',
-] as const
+import { aggregateJobs, credentialsFromEnv } from './lib/aggregate'
+import type { AggregateSearchParams, JobSource } from './lib/types'
 
 export const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod === 'OPTIONS') {
@@ -31,36 +16,23 @@ export const handler: Handler = async (event: HandlerEvent) => {
   }
 
   const incoming = event.queryStringParameters ?? {}
-  const params = new URLSearchParams()
-
-  for (const key of ALLOWED_PARAMS) {
-    const value = incoming[key]
-    if (value != null && value !== '') {
-      params.set(key, value)
-    }
+  const params: AggregateSearchParams = {
+    was: incoming.was || undefined,
+    wo: incoming.wo || undefined,
+    umkreis: toNumber(incoming.umkreis),
+    page: toNumber(incoming.page) ?? 1,
+    size: toNumber(incoming.size) ?? 20,
+    angebotsart: toNumber(incoming.angebotsart),
+    arbeitszeit: incoming.arbeitszeit || undefined,
+    befristung: toNumber(incoming.befristung),
+    veroeffentlichtseit: toNumber(incoming.veroeffentlichtseit),
+    sources: parseSourcesParam(incoming.sources),
   }
 
-  if (!params.has('size')) params.set('size', '20')
-  if (!params.has('page')) params.set('page', '1')
-
   try {
-    const response = await fetch(`${BA_BASE}?${params.toString()}`, {
-      headers: {
-        'X-API-Key': API_KEY,
-        Accept: 'application/json',
-      },
-    })
-
-    const text = await response.text()
-    let body: unknown
-    try {
-      body = JSON.parse(text)
-    } catch {
-      body = { error: 'Invalid upstream response', raw: text.slice(0, 200) }
-    }
-
+    const body = await aggregateJobs(params, credentialsFromEnv(process.env))
     return {
-      statusCode: response.status,
+      statusCode: 200,
       headers: {
         ...corsHeaders(),
         'Content-Type': 'application/json',
@@ -69,9 +41,23 @@ export const handler: Handler = async (event: HandlerEvent) => {
       body: JSON.stringify(body),
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Upstream request failed'
+    const message = error instanceof Error ? error.message : 'Aggregation failed'
     return json(502, { error: message })
   }
+}
+
+function toNumber(value?: string | null): number | undefined {
+  if (value == null || value === '') return undefined
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
+function parseSourcesParam(value?: string | null): JobSource[] | undefined {
+  if (!value) return undefined
+  return value
+    .split(',')
+    .map((part) => part.trim().toLowerCase())
+    .filter(Boolean) as JobSource[]
 }
 
 function corsHeaders() {

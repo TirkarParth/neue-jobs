@@ -6,9 +6,9 @@ import {
   RADIUS_OPTIONS,
   WORK_TIME_OPTIONS,
 } from '../constants/germany'
-import type { SearchFormState } from '../types/job'
+import { SOURCE_OPTIONS, type JobSource, type SearchFormState } from '../types/job'
 
-const props = defineProps<{
+defineProps<{
   locating?: boolean
   locationError?: string | null
 }>()
@@ -24,12 +24,16 @@ const form = reactive<SearchFormState>({
   umkreis: 25,
   arbeitszeit: '',
   angebotsart: '',
+  sources: SOURCE_OPTIONS.map((option) => option.id),
 })
 
 const showFilters = ref(false)
 
 function submit() {
-  emit('search', { ...form })
+  emit('search', {
+    ...form,
+    sources: [...form.sources],
+  })
 }
 
 function pickCity(city: string) {
@@ -38,6 +42,15 @@ function pickCity(city: string) {
 
 function onLocate() {
   emit('locate')
+}
+
+function toggleSource(source: JobSource, checked: boolean) {
+  if (checked) {
+    if (!form.sources.includes(source)) form.sources.push(source)
+    return
+  }
+  if (form.sources.length === 1) return
+  form.sources = form.sources.filter((item) => item !== source)
 }
 
 defineExpose({
@@ -107,6 +120,18 @@ defineExpose({
       </button>
     </div>
 
+    <fieldset class="sources">
+      <legend>Quellen</legend>
+      <label v-for="option in SOURCE_OPTIONS" :key="option.id" class="source-option">
+        <input
+          type="checkbox"
+          :checked="form.sources.includes(option.id)"
+          @change="toggleSource(option.id, ($event.target as HTMLInputElement).checked)"
+        />
+        <span>{{ option.label }}</span>
+      </label>
+    </fieldset>
+
     <div class="search-actions">
       <button type="button" class="btn-ghost" @click="showFilters = !showFilters">
         {{ showFilters ? 'Filter ausblenden' : 'Mehr Filter' }}
@@ -116,7 +141,7 @@ defineExpose({
 
     <div v-if="showFilters" class="filters">
       <label class="field">
-        <span class="field-label">Angebotsart</span>
+        <span class="field-label">Angebotsart (Arbeitsagentur)</span>
         <select v-model="form.angebotsart" name="angebotsart">
           <option v-for="option in JOB_TYPE_OPTIONS" :key="String(option.value)" :value="option.value">
             {{ option.label }}
@@ -124,7 +149,7 @@ defineExpose({
         </select>
       </label>
       <label class="field">
-        <span class="field-label">Arbeitszeit</span>
+        <span class="field-label">Arbeitszeit (Arbeitsagentur)</span>
         <select v-model="form.arbeitszeit" name="arbeitszeit">
           <option v-for="option in WORK_TIME_OPTIONS" :key="option.value" :value="option.value">
             {{ option.label }}
@@ -252,6 +277,41 @@ defineExpose({
   border-color: var(--accent);
   color: var(--accent);
   background: var(--accent-soft);
+}
+
+.sources {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.55);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.1rem;
+  align-items: center;
+}
+
+.sources legend {
+  padding: 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.source-option {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.source-option input {
+  accent-color: var(--accent);
 }
 
 .search-actions {
