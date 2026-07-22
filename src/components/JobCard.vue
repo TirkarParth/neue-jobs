@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { JobOffer } from '../types/job'
+import type { NormalizedJob } from '../types/job'
+import { SOURCE_OPTIONS } from '../types/job'
 
 defineProps<{
-  job: JobOffer
+  job: NormalizedJob
 }>()
 
 function formatDate(value?: string) {
@@ -16,38 +17,39 @@ function formatDate(value?: string) {
   }).format(date)
 }
 
-function jobUrl(refnr: string) {
-  return `https://www.arbeitsagentur.de/jobsuche/jobdetail/${encodeURIComponent(refnr)}`
+function sourceLabel(source: NormalizedJob['source']) {
+  return SOURCE_OPTIONS.find((option) => option.id === source)?.label ?? source
 }
 </script>
 
 <template>
   <article class="job">
     <div class="job-top">
-      <h3 class="job-title">
-        <a :href="jobUrl(job.refnr)" target="_blank" rel="noopener noreferrer">
-          {{ job.titel }}
-        </a>
-      </h3>
-      <span v-if="job.arbeitsort?.entfernung" class="distance">
-        {{ job.arbeitsort.entfernung }} km
-      </span>
+      <div class="title-block">
+        <span class="source-badge" :data-source="job.source">{{ sourceLabel(job.source) }}</span>
+        <h3 class="job-title">
+          <a :href="job.url" target="_blank" rel="noopener noreferrer">
+            {{ job.title }}
+          </a>
+        </h3>
+      </div>
+      <span v-if="job.distanceKm != null" class="distance"> {{ job.distanceKm }} km </span>
     </div>
 
-    <p class="employer">{{ job.arbeitgeber || 'Arbeitgeber nicht angegeben' }}</p>
+    <p class="employer">{{ job.company || 'Arbeitgeber nicht angegeben' }}</p>
 
     <div class="meta">
-      <span v-if="job.arbeitsort?.ort">
-        {{ [job.arbeitsort.plz, job.arbeitsort.ort].filter(Boolean).join(' ') }}
-        <template v-if="job.arbeitsort.region"> · {{ job.arbeitsort.region }}</template>
-      </span>
-      <span v-if="job.beruf">{{ job.beruf }}</span>
-      <span v-if="formatDate(job.aktuelleVeroeffentlichungsdatum)">
-        Veröffentlicht {{ formatDate(job.aktuelleVeroeffentlichungsdatum) }}
+      <span v-if="job.locationLabel">{{ job.locationLabel }}</span>
+      <span v-if="job.occupation">{{ job.occupation }}</span>
+      <span v-if="job.salary">{{ job.salary }}</span>
+      <span v-if="formatDate(job.publishedAt)">
+        Veröffentlicht {{ formatDate(job.publishedAt) }}
       </span>
     </div>
 
-    <a class="job-cta" :href="jobUrl(job.refnr)" target="_blank" rel="noopener noreferrer">
+    <p v-if="job.description" class="snippet">{{ job.description }}</p>
+
+    <a class="job-cta" :href="job.url" target="_blank" rel="noopener noreferrer">
       Zur Anzeige
       <span aria-hidden="true">→</span>
     </a>
@@ -68,6 +70,33 @@ function jobUrl(refnr: string) {
   gap: 0.75rem;
   justify-content: space-between;
   align-items: start;
+}
+
+.title-block {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.source-badge {
+  justify-self: start;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.source-badge[data-source='adzuna'] {
+  background: #e8eef8;
+  color: #2a4f8f;
+}
+
+.source-badge[data-source='jooble'] {
+  background: #f5ebe0;
+  color: #8a4b1f;
 }
 
 .job-title {
@@ -110,6 +139,17 @@ function jobUrl(refnr: string) {
   gap: 0.35rem 0.85rem;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.snippet {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .job-cta {
