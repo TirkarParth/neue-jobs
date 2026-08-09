@@ -1,6 +1,7 @@
 import { searchAdzuna } from './providers/adzuna'
 import { searchArbeitsagentur } from './providers/arbeitsagentur'
 import { searchJooble } from './providers/jooble'
+import { hasSuccessfulSource, summarizeSourceFailures } from './source-status'
 import {
   ALL_SOURCES,
   SOURCE_LABELS,
@@ -89,25 +90,32 @@ export async function aggregateJobs(
   })
 
   const results = await Promise.all(tasks)
+  const sources = results.map((result) => ({
+    id: result.source,
+    label: result.label || SOURCE_LABELS[result.source],
+    status: result.status,
+    total: result.total,
+    message: result.message,
+  }))
+
   const merged = sortJobs(dedupeJobs(results.flatMap((result) => result.jobs))).slice(
     0,
     size,
   )
 
   const total = results.reduce((sum, result) => sum + (result.total || 0), 0)
+  const warning =
+    merged.length === 0 && !hasSuccessfulSource(sources)
+      ? summarizeSourceFailures(sources)
+      : undefined
 
   return {
     jobs: merged,
     total,
     page,
     size,
-    sources: results.map((result) => ({
-      id: result.source,
-      label: result.label || SOURCE_LABELS[result.source],
-      status: result.status,
-      total: result.total,
-      message: result.message,
-    })),
+    sources,
+    warning,
   }
 }
 
