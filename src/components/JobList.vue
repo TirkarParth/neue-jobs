@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { NormalizedJob, SourceStatus } from '../types/job'
+import { formatSourceStatus } from '../utils/sourceStatus'
 import JobCard from './JobCard.vue'
 
 defineProps<{
@@ -18,12 +19,6 @@ const emit = defineEmits<{
 
 function formatCount(n: number) {
   return new Intl.NumberFormat('de-DE').format(n)
-}
-
-function statusLabel(status: SourceStatus['status']) {
-  if (status === 'ok') return 'aktiv'
-  if (status === 'skipped') return 'ohne API-Key'
-  return 'Fehler'
 }
 </script>
 
@@ -44,13 +39,19 @@ function statusLabel(status: SourceStatus['status']) {
     </div>
 
     <div v-else-if="jobs.length === 0" class="state">
-      <p>Keine Stellen gefunden. Probiere einen größeren Umkreis, andere Stichworte oder mehr Quellen.</p>
+      <p>
+        Keine Stellen gefunden. Probiere einen größeren Umkreis, andere Stichworte oder mehr Quellen.
+      </p>
       <ul v-if="sources.length" class="source-status">
         <li v-for="source in sources" :key="source.id">
-          <strong>{{ source.label }}</strong>: {{ statusLabel(source.status) }}
+          <strong>{{ source.label }}</strong>: {{ formatSourceStatus(source.status) }}
           <span v-if="source.message"> — {{ source.message }}</span>
         </li>
       </ul>
+      <p v-if="sources.some((source) => source.status === 'error')" class="hint">
+        Hinweis: Die Arbeitsagentur-Suche nutzt inzwischen die v6-API. Bei anhaltenden Fehlern
+        Seite neu laden oder später erneut versuchen.
+      </p>
     </div>
 
     <template v-else>
@@ -65,7 +66,7 @@ function statusLabel(status: SourceStatus['status']) {
             :key="source.id"
             class="source-pill"
             :data-status="source.status"
-            :title="source.message || statusLabel(source.status)"
+            :title="source.message || formatSourceStatus(source.status)"
           >
             {{ source.label }}
             <span v-if="source.status === 'ok' && source.total != null">
