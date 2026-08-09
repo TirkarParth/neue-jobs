@@ -84,6 +84,7 @@ export default defineConfig(({ mode }) => {
           headers: {
             'X-API-Key': 'jobboerse-jobsuche',
             Accept: 'application/json',
+            'User-Agent': 'NahJobs/1.0 (+https://github.com/TirkarParth/neue-jobs)',
           },
         },
       },
