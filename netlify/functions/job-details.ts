@@ -1,8 +1,5 @@
 import type { Handler, HandlerEvent } from '@netlify/functions'
-
-const BA_BASE =
-  'https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobdetails'
-const API_KEY = 'jobboerse-jobsuche'
+import { baHeaders, BA_DETAILS_URL } from './lib/providers/ba-config'
 
 export const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod === 'OPTIONS') {
@@ -25,11 +22,8 @@ export const handler: Handler = async (event: HandlerEvent) => {
   const encoded = Buffer.from(refnr, 'utf8').toString('base64')
 
   try {
-    const response = await fetch(`${BA_BASE}/${encoded}`, {
-      headers: {
-        'X-API-Key': API_KEY,
-        Accept: 'application/json',
-      },
+    const response = await fetch(`${BA_DETAILS_URL}/${encoded}`, {
+      headers: baHeaders(),
     })
 
     const text = await response.text()

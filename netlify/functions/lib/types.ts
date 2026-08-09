@@ -41,6 +41,7 @@ export interface AggregateSearchResponse {
   page: number
   size: number
   sources: SourceResultStatus[]
+  warning?: string
 }
 
 export interface ProviderResult {

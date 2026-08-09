@@ -10,7 +10,7 @@ https://github.com/TirkarParth/neue-jobs
 
 | Source | Needs API key? | Notes |
 | --- | --- | --- |
-| **Arbeitsagentur** | No | Always on — largest public German jobs DB |
+| **Arbeitsagentur** | No | Always on — uses Jobsuche **v6** (`/pc/v6/jobs`; v4 search is blocked) |
 | **Adzuna** | Yes (`ADZUNA_APP_ID`, `ADZUNA_APP_KEY`) | Free developer keys, country `de` |
 | **Jooble** | Yes (`JOOBLE_API_KEY`) | Free key via Jooble API signup |
 

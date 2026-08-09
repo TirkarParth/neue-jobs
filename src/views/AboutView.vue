@@ -11,7 +11,7 @@
     </p>
     <p>
       Die Suche aggregiert mehrere Quellen: die Jobsuche der Bundesagentur für Arbeit
-      (immer aktiv), plus Adzuna und Jooble wenn API-Keys gesetzt sind. Antworten werden
+      (v6-API, immer aktiv), plus Adzuna und Jooble wenn API-Keys gesetzt sind. Antworten werden
       normalisiert, zusammengeführt und bereinigt — über Netlify Functions in Produktion
       und einen Vite-Middleware-Proxy lokal.
     </p>
