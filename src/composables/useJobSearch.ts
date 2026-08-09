@@ -25,6 +25,17 @@ export function useJobSearch() {
       jobs.value = data.jobs ?? []
       total.value = data.total ?? jobs.value.length
       sources.value = data.sources ?? []
+
+      const noSuccessfulSource =
+        jobs.value.length === 0 &&
+        sources.value.length > 0 &&
+        sources.value.every((source) => source.status !== 'ok')
+
+      if (noSuccessfulSource) {
+        error.value =
+          data.warning ||
+          'Keine Quelle lieferte Ergebnisse. Prüfe API-Keys oder versuche es später erneut.'
+      }
     } catch (err) {
       jobs.value = []
       total.value = 0
