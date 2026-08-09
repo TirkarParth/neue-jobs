@@ -30,6 +30,7 @@ export interface JobSearchResponse {
   page: number
   size: number
   sources: SourceStatus[]
+  warning?: string
 }
 
 export interface JobSearchParams {
