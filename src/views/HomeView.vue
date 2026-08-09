@@ -45,7 +45,7 @@ async function onLocate() {
       <h1>Stellen in deiner Nähe — aus mehreren Quellen in Deutschland</h1>
       <p class="lede">
         Suche nach Beruf und Ort, oder nutze deinen Standort. Ergebnisse kommen von der
-        Arbeitsagentur sowie Adzuna und Jooble (mit API-Keys).
+        Arbeitsagentur (Jobsuche v6) sowie Adzuna und Jooble (mit API-Keys).
       </p>
 
       <SearchForm
